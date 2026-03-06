@@ -336,7 +336,7 @@ class MailResource extends Resource
             ->columns([
                 TextColumn::make('status')
                     ->label(__('Status'))
-                    ->sortable()
+                    ->sortable(false)
                     ->searchable(false)
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
