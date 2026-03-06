@@ -79,21 +79,20 @@ class SuppressionResource extends Resource
         $eventTable = config('mails.database.tables.events');
 
         return parent::getEloquentQuery()
-            ->from("$eventTable as events")
-            ->join("$mailTable as mails", 'events.mail_id', '=', 'mails.id')
-            ->where(function ($query) {
-                $query->where('events.type', EventType::HARD_BOUNCED)
-                    ->orWhere('events.type', EventType::COMPLAINED);
+            ->join($mailTable, "$eventTable.mail_id", '=', "$mailTable.id")
+            ->where(function ($query) use ($eventTable) {
+                $query->where("$eventTable.type", EventType::HARD_BOUNCED)
+                    ->orWhere("$eventTable.type", EventType::COMPLAINED);
             })
-            ->whereNull('events.unsuppressed_at')
-            ->whereIn('mails.to', function ($query) use ($eventTable) {
+            ->whereNull("$eventTable.unsuppressed_at")
+            ->whereIn("$mailTable.to", function ($query) use ($eventTable) {
                 $query->select('to')
                     ->from($eventTable)
                     ->where('type', EventType::HARD_BOUNCED)
                     ->whereNull('unsuppressed_at')
                     ->groupBy('to');
             })
-            ->select('events.*', 'mails.to')
+            ->select("$eventTable.*", "$mailTable.to")
             ->addSelect([
                 'has_complained' => MailEvent::select('m.id')
                     ->from("$eventTable as me")
@@ -103,14 +102,15 @@ class SuppressionResource extends Resource
                     })
                     ->take(1),
             ])
-            ->latest('events.occurred_at')
-            ->orderBy('events.occurred_at', 'desc');
+            ->latest("$eventTable.occurred_at");
     }
 
     public static function table(Table $table): Table
     {
+        $eventTable = config('mails.database.tables.events');
+
         return $table
-            ->defaultSort('occurred_at', 'desc')
+            ->defaultSort("$eventTable.occurred_at", 'desc')
             ->columns([
                 TextColumn::make('to')
                     ->label(__('Email address'))
