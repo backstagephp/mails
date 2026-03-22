@@ -1,6 +1,6 @@
 {
-    "name": "backstage/filament-mails",
-    "description": "View logged mails and events in a beautiful Filament UI.",
+    "name": "backstage/mails",
+    "description": "Log sending mails and related events in a beautiful Filament UI.",
     "keywords": [
         "backstagephp",
         "laravel",
