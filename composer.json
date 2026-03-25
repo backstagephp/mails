@@ -1,0 +1,79 @@
+{
+    "name": "backstage/mails",
+    "description": "View logged mails and events in a beautiful Filament UI.",
+    "keywords": [
+        "backstagephp",
+        "laravel",
+        "mails"
+    ],
+    "homepage": "https://github.com/backstagephp/mails",
+    "support": {
+        "issues": "https://github.com/backstagephp/mails/issues",
+        "source": "https://github.com/backstagephp/mails"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Baspa",
+            "email": "hello@baspa.dev",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "filament/filament": "^4.0",
+        "spatie/laravel-package-tools": "^1.15.0",
+        "backstage/laravel-mails": "self.version"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.16",
+        "nunomaduro/collision": "^8.8.0",
+        "orchestra/testbench": "^9.0|^10.0",
+        "pestphp/pest": "^3.7",
+        "pestphp/pest-plugin-arch": "^3.1.0",
+        "pestphp/pest-plugin-laravel": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Backstage\\Mails\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Backstage\\Mails\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": "@php ./vendor/bin/testbench package:discover --ansi",
+        "analyse": "vendor/bin/phpstan analyse",
+        "test": "vendor/bin/pest",
+        "test-coverage": "vendor/bin/pest --coverage",
+        "format": "vendor/bin/pint"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true,
+            "php-http/discovery": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Backstage\\Mails\\MailsServiceProvider"
+            ],
+            "aliases": {
+                "Mails": "Backstage\\Mails\\Facades\\Mails"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "repositories": {
+        "backstage/laravel-mails": {
+            "type": "vcs",
+            "url": "git@github.com:backstagephp/laravel-mails.git"
+        }
+    }
+}
