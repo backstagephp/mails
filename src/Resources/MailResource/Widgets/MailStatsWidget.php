@@ -1,8 +1,8 @@
 <?php
 
-namespace Backstage\FilamentMails\Resources\MailResource\Widgets;
+namespace Backstage\Mails\Resources\MailResource\Widgets;
 
-use Backstage\FilamentMails\FilamentMailsPlugin;
+use Backstage\Mails\MailsPlugin;
 use Filament\Facades\Filament;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -15,7 +15,7 @@ class MailStatsWidget extends BaseWidget
 
     public static function canView(): bool
     {
-        return FilamentMailsPlugin::get()->userCanManageMails();
+        return MailsPlugin::get()->userCanManageMails();
     }
 
     protected function getStats(): array

@@ -1,11 +1,11 @@
 <?php
 
-namespace Backstage\FilamentMails\Resources\EventResource\Pages;
+namespace Backstage\Mails\Resources\EventResource\Pages;
 
-use Backstage\FilamentMails\FilamentMailsPlugin;
-use Backstage\FilamentMails\Resources\EventResource;
-use Backstage\Mails\Enums\EventType;
-use Backstage\Mails\Models\MailEvent;
+use Backstage\Mails\Laravel\Enums\EventType;
+use Backstage\Mails\Laravel\Models\MailEvent;
+use Backstage\Mails\MailsPlugin;
+use Backstage\Mails\Resources\EventResource;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
@@ -14,12 +14,12 @@ class ListEvents extends ListRecords
 {
     public static function canAccess(array $parameters = []): bool
     {
-        return FilamentMailsPlugin::get()->userCanManageMails();
+        return MailsPlugin::get()->userCanManageMails();
     }
 
     public static function getResource(): string
     {
-        return config('filament-mails.resources.event', EventResource::class);
+        return config('mails.resources.event', EventResource::class);
     }
 
     public function getTitle(): string

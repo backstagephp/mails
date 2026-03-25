@@ -1,12 +1,12 @@
 <?php
 
-namespace Backstage\FilamentMails;
+namespace Backstage\Mails;
 
-use Backstage\FilamentMails\Controllers\MailDownloadController;
-use Backstage\FilamentMails\Controllers\MailPreviewController;
+use Backstage\Mails\Controllers\MailDownloadController;
+use Backstage\Mails\Controllers\MailPreviewController;
 use Illuminate\Support\Facades\Route;
 
-class FilamentMails
+class Mails
 {
     public static function routes(): void
     {

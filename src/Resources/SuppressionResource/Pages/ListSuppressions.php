@@ -1,9 +1,9 @@
 <?php
 
-namespace Backstage\FilamentMails\Resources\SuppressionResource\Pages;
+namespace Backstage\Mails\Resources\SuppressionResource\Pages;
 
-use Backstage\FilamentMails\FilamentMailsPlugin;
-use Backstage\FilamentMails\Resources\SuppressionResource;
+use Backstage\Mails\MailsPlugin;
+use Backstage\Mails\Resources\SuppressionResource;
 use Filament\Resources\Pages\ListRecords;
 
 class ListSuppressions extends ListRecords
@@ -17,6 +17,6 @@ class ListSuppressions extends ListRecords
 
     public static function canAccess(array $parameters = []): bool
     {
-        return FilamentMailsPlugin::get()->userCanManageMails();
+        return MailsPlugin::get()->userCanManageMails();
     }
 }

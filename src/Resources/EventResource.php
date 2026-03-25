@@ -1,12 +1,12 @@
 <?php
 
-namespace Backstage\FilamentMails\Resources;
+namespace Backstage\Mails\Resources;
 
-use Backstage\FilamentMails\FilamentMailsPlugin;
-use Backstage\FilamentMails\Resources\EventResource\Pages\ListEvents;
-use Backstage\FilamentMails\Resources\EventResource\Pages\ViewEvent;
-use Backstage\Mails\Enums\EventType;
-use Backstage\Mails\Models\MailEvent;
+use Backstage\Mails\Laravel\Enums\EventType;
+use Backstage\Mails\Laravel\Models\MailEvent;
+use Backstage\Mails\MailsPlugin;
+use Backstage\Mails\Resources\EventResource\Pages\ListEvents;
+use Backstage\Mails\Resources\EventResource\Pages\ViewEvent;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
@@ -27,12 +27,12 @@ class EventResource extends Resource
 
     public static function canAccess(): bool
     {
-        return FilamentMailsPlugin::get()->userCanManageMails();
+        return MailsPlugin::get()->userCanManageMails();
     }
 
     public static function getSlug(?Panel $panel = null): string
     {
-        return config('filament-mails.resources.mail')::getSlug() . '/events';
+        return config('mails.resources.mail')::getSlug() . '/events';
     }
 
     public function getTitle(): string
@@ -47,12 +47,12 @@ class EventResource extends Resource
 
     public static function getNavigationParentItem(): ?string
     {
-        return config('filament-mails.resources.mail')::getNavigationLabel();
+        return config('mails.resources.mail')::getNavigationLabel();
     }
 
     public static function getNavigationGroup(): ?string
     {
-        return config('filament-mails.resources.mail')::getNavigationGroup();
+        return config('mails.resources.mail')::getNavigationGroup();
     }
 
     public static function getNavigationLabel(): string

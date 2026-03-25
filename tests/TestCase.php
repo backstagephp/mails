@@ -1,8 +1,8 @@
 <?php
 
-namespace Backstage\FilamentMails\Tests;
+namespace Backstage\Mails\Tests;
 
-use Backstage\FilamentMails\FilamentMailsServiceProvider;
+use Backstage\Mails\MailsServiceProvider;
 use BladeUI\Heroicons\BladeHeroiconsServiceProvider;
 use BladeUI\Icons\BladeIconsServiceProvider;
 use Filament\Actions\ActionsServiceProvider;
@@ -25,7 +25,7 @@ class TestCase extends Orchestra
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Backstage\\FilamentMails\\Database\\Factories\\' . class_basename($modelName) . 'Factory'
+            fn (string $modelName) => 'Backstage\\Mails\\Database\\Factories\\' . class_basename($modelName) . 'Factory'
         );
     }
 
@@ -44,7 +44,7 @@ class TestCase extends Orchestra
             SupportServiceProvider::class,
             TablesServiceProvider::class,
             WidgetsServiceProvider::class,
-            FilamentMailsServiceProvider::class,
+            MailsServiceProvider::class,
         ];
     }
 

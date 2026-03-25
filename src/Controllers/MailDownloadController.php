@@ -1,8 +1,8 @@
 <?php
 
-namespace Backstage\FilamentMails\Controllers;
+namespace Backstage\Mails\Controllers;
 
-use Backstage\Mails\Models\MailAttachment;
+use Backstage\Mails\Laravel\Models\MailAttachment;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Config;
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace Backstage\FilamentMails;
+namespace Backstage\Mails;
 
-use Backstage\FilamentMails\Testing\TestsFilamentMails;
+use Backstage\Mails\Testing\TestsMails;
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Asset;
 use Filament\Support\Assets\Css;
@@ -15,11 +15,11 @@ use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
-class FilamentMailsServiceProvider extends PackageServiceProvider
+class MailsServiceProvider extends PackageServiceProvider
 {
-    public static string $name = 'filament-mails';
+    public static string $name = 'mails';
 
-    public static string $viewNamespace = 'filament-mails';
+    public static string $viewNamespace = 'mails';
 
     public function configurePackage(Package $package): void
     {
@@ -35,7 +35,7 @@ class FilamentMailsServiceProvider extends PackageServiceProvider
                     ->publishConfigFile()
                     ->publishMigrations()
                     ->askToRunMigrations()
-                    ->askToStarRepoOnGitHub('backstagephp/filament-mails');
+                    ->askToStarRepoOnGitHub('backstagephp/mails');
             });
 
         $configFileName = $package->shortName();
@@ -76,18 +76,18 @@ class FilamentMailsServiceProvider extends PackageServiceProvider
         if (app()->runningInConsole()) {
             foreach (app(Filesystem::class)->files(__DIR__ . '/../stubs/') as $file) {
                 $this->publishes([
-                    $file->getRealPath() => base_path("stubs/filament-mails/{$file->getFilename()}"),
-                ], 'filament-mails-stubs');
+                    $file->getRealPath() => base_path("stubs/mails/{$file->getFilename()}"),
+                ], 'mails-stubs');
             }
         }
 
         // Testing
-        Testable::mixin(new TestsFilamentMails);
+        Testable::mixin(new TestsMails);
     }
 
     protected function getAssetPackageName(): ?string
     {
-        return 'backstagephp/filament-mails';
+        return 'backstagephp/mails';
     }
 
     /**
@@ -96,9 +96,9 @@ class FilamentMailsServiceProvider extends PackageServiceProvider
     protected function getAssets(): array
     {
         return [
-            // AlpineComponent::make('filament-mails', __DIR__ . '/../resources/dist/components/filament-mails.js'),
-            // Css::make('filament-mails-styles', __DIR__ . '/../resources/dist/filament-mails.css'),
-            // Js::make('filament-mails-scripts', __DIR__ . '/../resources/dist/filament-mails.js'),
+            // AlpineComponent::make('mails', __DIR__ . '/../resources/dist/components/mails.js'),
+            // Css::make('mails-styles', __DIR__ . '/../resources/dist/mails.css'),
+            // Js::make('mails-scripts', __DIR__ . '/../resources/dist/mails.js'),
         ];
     }
 
@@ -140,7 +140,7 @@ class FilamentMailsServiceProvider extends PackageServiceProvider
     protected function getMigrations(): array
     {
         return [
-            'create_filament-mails_table',
+            'create_mails_table',
         ];
     }
 }

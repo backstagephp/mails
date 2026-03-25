@@ -1,11 +1,11 @@
 <?php
 
-namespace Backstage\FilamentMails\Resources\MailResource\Pages;
+namespace Backstage\Mails\Resources\MailResource\Pages;
 
-use Backstage\FilamentMails\FilamentMailsPlugin;
-use Backstage\FilamentMails\Resources\MailResource;
-use Backstage\FilamentMails\Resources\MailResource\Widgets\MailStatsWidget;
-use Backstage\Mails\Models\Mail;
+use Backstage\Mails\Laravel\Models\Mail;
+use Backstage\Mails\MailsPlugin;
+use Backstage\Mails\Resources\MailResource;
+use Backstage\Mails\Resources\MailResource\Widgets\MailStatsWidget;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
@@ -14,12 +14,12 @@ class ListMails extends ListRecords
 {
     public static function canAccess(array $parameters = []): bool
     {
-        return FilamentMailsPlugin::get()->userCanManageMails();
+        return MailsPlugin::get()->userCanManageMails();
     }
 
     public static function getResource(): string
     {
-        return config('filament-mails.resources.mail', MailResource::class);
+        return config('mails.resources.mail', MailResource::class);
     }
 
     public function getTitle(): string

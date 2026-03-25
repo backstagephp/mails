@@ -1,15 +1,15 @@
 {
     "name": "backstage/mails",
-    "description": "Log sending mails and related events in a beautiful Filament UI.",
+    "description": "View logged mails and events in a beautiful Filament UI.",
     "keywords": [
         "backstagephp",
         "laravel",
-        "filament-mails"
+        "mails"
     ],
-    "homepage": "https://github.com/backstagephp/filament-mails",
+    "homepage": "https://github.com/backstagephp/mails",
     "support": {
-        "issues": "https://github.com/backstagephp/filament-mails/issues",
-        "source": "https://github.com/backstagephp/filament-mails"
+        "issues": "https://github.com/backstagephp/mails/issues",
+        "source": "https://github.com/backstagephp/mails"
     },
     "license": "MIT",
     "authors": [
@@ -36,12 +36,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Backstage\\FilamentMails\\": "src/"
+            "Backstage\\Mails\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Backstage\\FilamentMails\\Tests\\": "tests/"
+            "Backstage\\Mails\\Tests\\": "tests/"
         }
     },
     "scripts": {
@@ -62,10 +62,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Backstage\\FilamentMails\\FilamentMailsServiceProvider"
+                "Backstage\\Mails\\MailsServiceProvider"
             ],
             "aliases": {
-                "FilamentMails": "Backstage\\FilamentMails\\Facades\\FilamentMails"
+                "Mails": "Backstage\\Mails\\Facades\\Mails"
             }
         }
     },

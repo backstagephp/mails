@@ -1,13 +1,13 @@
 <?php
 
-namespace Backstage\FilamentMails\Testing;
+namespace Backstage\Mails\Testing;
 
 use Livewire\Features\SupportTesting\Testable;
 
 /**
  * @mixin Testable
  */
-class TestsFilamentMails
+class TestsMails
 {
     //
 }

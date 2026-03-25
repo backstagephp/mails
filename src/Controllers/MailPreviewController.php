@@ -1,8 +1,8 @@
 <?php
 
-namespace Backstage\FilamentMails\Controllers;
+namespace Backstage\Mails\Controllers;
 
-use Backstage\Mails\Models\Mail;
+use Backstage\Mails\Laravel\Models\Mail;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 

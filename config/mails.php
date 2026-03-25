@@ -1,8 +1,8 @@
 <?php
 
-use Backstage\FilamentMails\Resources\EventResource;
-use Backstage\FilamentMails\Resources\MailResource;
-use Backstage\FilamentMails\Resources\SuppressionResource;
+use Backstage\Mails\Resources\EventResource;
+use Backstage\Mails\Resources\MailResource;
+use Backstage\Mails\Resources\SuppressionResource;
 
 return [
     'resources' => [

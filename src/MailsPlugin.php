@@ -1,17 +1,17 @@
 <?php
 
-namespace Backstage\FilamentMails;
+namespace Backstage\Mails;
 
-use Backstage\FilamentMails\Resources\EventResource;
-use Backstage\FilamentMails\Resources\MailResource;
-use Backstage\FilamentMails\Resources\SuppressionResource;
+use Backstage\Mails\Resources\EventResource;
+use Backstage\Mails\Resources\MailResource;
+use Backstage\Mails\Resources\SuppressionResource;
 use Closure;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
 use Filament\Support\Colors\Color;
 use Filament\Support\Concerns\EvaluatesClosures;
 
-class FilamentMailsPlugin implements Plugin
+class MailsPlugin implements Plugin
 {
     use EvaluatesClosures;
 
@@ -19,7 +19,7 @@ class FilamentMailsPlugin implements Plugin
 
     public function getId(): string
     {
-        return 'filament-mails';
+        return 'mails';
     }
 
     public function register(Panel $panel): void
@@ -29,9 +29,9 @@ class FilamentMailsPlugin implements Plugin
                 'clicked' => Color::Purple,
             ])
             ->resources([
-                config('filament-mails.resources.mail', MailResource::class),
-                config('filament-mails.resources.event', EventResource::class),
-                config('filament-mails.resources.suppression', SuppressionResource::class),
+                config('mails.resources.mail', MailResource::class),
+                config('mails.resources.event', EventResource::class),
+                config('mails.resources.suppression', SuppressionResource::class),
             ]);
     }
 

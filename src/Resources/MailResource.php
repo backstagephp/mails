@@ -1,15 +1,15 @@
 <?php
 
-namespace Backstage\FilamentMails\Resources;
+namespace Backstage\Mails\Resources;
 
-use Backstage\FilamentMails\FilamentMailsPlugin;
-use Backstage\FilamentMails\Resources\MailResource\Pages\ListMails;
-use Backstage\FilamentMails\Resources\MailResource\Pages\ViewMail;
-use Backstage\FilamentMails\Resources\MailResource\Widgets\MailStatsWidget;
-use Backstage\Mails\Actions\ResendMail;
-use Backstage\Mails\Enums\EventType;
-use Backstage\Mails\Models\Mail;
-use Backstage\Mails\Models\MailEvent;
+use Backstage\Mails\Laravel\Actions\ResendMail;
+use Backstage\Mails\Laravel\Enums\EventType;
+use Backstage\Mails\Laravel\Models\Mail;
+use Backstage\Mails\Laravel\Models\MailEvent;
+use Backstage\Mails\MailsPlugin;
+use Backstage\Mails\Resources\MailResource\Pages\ListMails;
+use Backstage\Mails\Resources\MailResource\Pages\ViewMail;
+use Backstage\Mails\Resources\MailResource\Widgets\MailStatsWidget;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
@@ -48,7 +48,7 @@ class MailResource extends Resource
 
     public static function canAccess(): bool
     {
-        return FilamentMailsPlugin::get()->userCanManageMails();
+        return MailsPlugin::get()->userCanManageMails();
     }
 
     public static function getModel(): string
@@ -58,32 +58,32 @@ class MailResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __(config('filament-mails.navigation.group') ?? 'Emails');
+        return __(config('mails.navigation.group') ?? 'Emails');
     }
 
     public static function getNavigationSort(): ?int
     {
-        return config('filament-mails.navigation.sort');
+        return config('mails.navigation.sort');
     }
 
     public static function getNavigationLabel(): string
     {
-        return __(config('filament-mails.navigation.label') ?? 'Emails');
+        return __(config('mails.navigation.label') ?? 'Emails');
     }
 
     public static function getLabel(): ?string
     {
-        return __(config('filament-mails.label') ?? 'Email');
+        return __(config('mails.label') ?? 'Email');
     }
 
     public static function getNavigationIcon(): ?string
     {
-        return config('filament-mails.navigation.icon') ?? 'heroicon-o-envelope';
+        return config('mails.navigation.icon') ?? 'heroicon-o-envelope';
     }
 
     public function getTitle(): string
     {
-        return __(config('filament-mails.title') ?? 'Emails');
+        return __(config('mails.title') ?? 'Emails');
     }
 
     public static function infolist(Schema $schema): Schema
@@ -259,7 +259,7 @@ class MailResource extends Resource
                                             ->label(__('HTML Content'))
                                             ->extraAttributes(['class' => 'overflow-x-auto'])
                                             ->formatStateUsing(fn (string $state, Mail $record): View => view(
-                                                'filament-mails::mails.preview',
+                                                'mails::mails.preview',
                                                 ['html' => $state, 'mail' => $record],
                                             )),
                                     ]),
@@ -269,7 +269,7 @@ class MailResource extends Resource
                                             ->hiddenLabel()
                                             ->extraAttributes(['class' => 'overflow-x-auto'])
                                             ->formatStateUsing(fn (string $state, Mail $record): View => view(
-                                                'filament-mails::mails.html',
+                                                'mails::mails.html',
                                                 ['html' => $state, 'mail' => $record],
                                             ))
                                             ->copyable()
@@ -319,7 +319,7 @@ class MailResource extends Resource
                                         ViewEntry::make('uuid')
                                             ->label(__('Download'))
                                             ->formatStateUsing(fn ($record) => $record)
-                                            ->view('filament-mails::mails.download'),
+                                            ->view('mails::mails.download'),
                                     ]),
                             ]),
                     ]),
@@ -336,7 +336,7 @@ class MailResource extends Resource
             ->columns([
                 TextColumn::make('status')
                     ->label(__('Status'))
-                    ->sortable()
+                    ->sortable(false)
                     ->searchable(false)
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
