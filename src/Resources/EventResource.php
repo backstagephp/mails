@@ -2,11 +2,11 @@
 
 namespace Backstage\Mails\Resources;
 
+use Backstage\Mails\Laravel\Enums\EventType;
+use Backstage\Mails\Laravel\Models\MailEvent;
 use Backstage\Mails\MailsPlugin;
 use Backstage\Mails\Resources\EventResource\Pages\ListEvents;
 use Backstage\Mails\Resources\EventResource\Pages\ViewEvent;
-use Backstage\Mails\Laravel\Enums\EventType;
-use Backstage\Mails\Laravel\Models\MailEvent;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;

@@ -2,12 +2,12 @@
 
 namespace Backstage\Mails\Resources;
 
-use Backstage\Mails\MailsPlugin;
-use Backstage\Mails\Resources\SuppressionResource\Pages\ListSuppressions;
 use Backstage\Mails\Laravel\Enums\EventType;
 use Backstage\Mails\Laravel\Enums\Provider;
 use Backstage\Mails\Laravel\Events\MailUnsuppressed;
 use Backstage\Mails\Laravel\Models\MailEvent;
+use Backstage\Mails\MailsPlugin;
+use Backstage\Mails\Resources\SuppressionResource\Pages\ListSuppressions;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
 use Filament\Panel;

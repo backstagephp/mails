@@ -2,10 +2,10 @@
 
 namespace Backstage\Mails\Resources\MailResource\Pages;
 
+use Backstage\Mails\Laravel\Models\Mail;
 use Backstage\Mails\MailsPlugin;
 use Backstage\Mails\Resources\MailResource;
 use Backstage\Mails\Resources\MailResource\Widgets\MailStatsWidget;
-use Backstage\Mails\Laravel\Models\Mail;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;

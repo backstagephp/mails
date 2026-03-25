@@ -2,14 +2,14 @@
 
 namespace Backstage\Mails\Resources;
 
-use Backstage\Mails\MailsPlugin;
-use Backstage\Mails\Resources\MailResource\Pages\ListMails;
-use Backstage\Mails\Resources\MailResource\Pages\ViewMail;
-use Backstage\Mails\Resources\MailResource\Widgets\MailStatsWidget;
 use Backstage\Mails\Laravel\Actions\ResendMail;
 use Backstage\Mails\Laravel\Enums\EventType;
 use Backstage\Mails\Laravel\Models\Mail;
 use Backstage\Mails\Laravel\Models\MailEvent;
+use Backstage\Mails\MailsPlugin;
+use Backstage\Mails\Resources\MailResource\Pages\ListMails;
+use Backstage\Mails\Resources\MailResource\Pages\ViewMail;
+use Backstage\Mails\Resources\MailResource\Widgets\MailStatsWidget;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;

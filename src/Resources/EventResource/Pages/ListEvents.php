@@ -2,10 +2,10 @@
 
 namespace Backstage\Mails\Resources\EventResource\Pages;
 
-use Backstage\Mails\MailsPlugin;
-use Backstage\Mails\Resources\EventResource;
 use Backstage\Mails\Laravel\Enums\EventType;
 use Backstage\Mails\Laravel\Models\MailEvent;
+use Backstage\Mails\MailsPlugin;
+use Backstage\Mails\Resources\EventResource;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
