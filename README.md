@@ -1,6 +1,6 @@
-# View all sent emails and events from your Laravel app using Filament
+# View all sent emails and events from your Laravel app with Filament
 
-Backstage Mails
+## Backstage Mails
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/backstage/mails.svg?style=flat-square)](https://packagist.org/packages/backstage/mails)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/backstagephp/mails/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/backstagephp/mails/actions?query=workflow%3Arun-tests+branch%3Amain)
