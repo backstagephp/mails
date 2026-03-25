@@ -63,7 +63,7 @@ php artisan vendor:publish --tag="mails-views"
 Add the routes to the PanelProvider using the `routes()` method, like this:
 
 ```php
-use Backstage\FilamentMails\Facades\Mails;
+use Backstage\Mails\Facades\Mails;
 
 public function panel(Panel $panel): Panel
 {
@@ -75,7 +75,7 @@ public function panel(Panel $panel): Panel
 Then add the plugin to your `PanelProvider`
 
 ```php
-use Backstage\FilamentMails\MailsPlugin;
+use Backstage\Mails\MailsPlugin;
 
 public function panel(Panel $panel): Panel
 {
@@ -89,7 +89,7 @@ public function panel(Panel $panel): Panel
 Using the `canManageMails()` method, you can define which users have access to the mail resources/pages. Here's a comprehensive example that includes additional logic for flexibility:
 
 ```php
-use Backstage\FilamentMails\MailsPlugin;
+use Backstage\Mails\MailsPlugin;
 use Illuminate\Support\Facades\Auth;
 
 $panel
@@ -121,8 +121,8 @@ This example demonstrates how to combine role-based and permission-based access 
 If you want to protect the mail routes with your (tenant) middleware, you can do so by adding the routes to the `tenantRoutes`:
 
 ```php
-use Backstage\FilamentMails\MailsPlugin;
-use Backstage\FilamentMails\Facades\Mails;
+use Backstage\Mails\MailsPlugin;
+use Backstage\Mails\Facades\Mails;
 
 public function panel(Panel $panel): Panel
 {
