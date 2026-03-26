@@ -2,6 +2,14 @@
 
 All notable changes to `filament-mails` will be documented in this file.
 
+## v3.0.12 - 2026-03-26
+
+### What's Changed
+
+* fix: auto-register mail routes in plugin by @markvaneijk in https://github.com/backstagephp/mails/pull/72
+
+**Full Changelog**: https://github.com/backstagephp/mails/compare/v3.0.11...v3.0.12
+
 ## v3.0.11 - 2026-03-26
 
 **Full Changelog**: https://github.com/backstagephp/mails/compare/v3.0.10...v3.0.11
