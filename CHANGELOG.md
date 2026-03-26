@@ -2,6 +2,15 @@
 
 All notable changes to `filament-mails` will be documented in this file.
 
+## v3.0.13 - 2026-03-26
+
+### What's Changed
+
+* Fix mail routes, preview improvements & formatted HTML tab by @markvaneijk in https://github.com/backstagephp/mails/pull/73
+* Style opens and clicks as centered badges by @markvaneijk in https://github.com/backstagephp/mails/pull/74
+
+**Full Changelog**: https://github.com/backstagephp/mails/compare/v3.0.12...v3.0.13
+
 ## v3.0.12 - 2026-03-26
 
 ### What's Changed
