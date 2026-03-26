@@ -17,6 +17,28 @@ class ListMails extends ListRecords
         return MailsPlugin::get()->userCanManageMails();
     }
 
+    public function mountAction(string $name, array $arguments = [], array $context = []): mixed
+    {
+        $result = parent::mountAction($name, $arguments, $context);
+
+        if ($name === 'view' && isset($context['table']) && isset($context['recordKey'])) {
+            $this->defaultTableAction = $name;
+            $this->defaultTableActionRecord = $context['recordKey'];
+        }
+
+        return $result;
+    }
+
+    public function unmountAction(bool $canCancelParentActions = true): void
+    {
+        parent::unmountAction($canCancelParentActions);
+
+        if (empty($this->mountedActions)) {
+            $this->defaultTableAction = null;
+            $this->defaultTableActionRecord = null;
+        }
+    }
+
     public static function getResource(): string
     {
         return config('mails.resources.mail', MailResource::class);
