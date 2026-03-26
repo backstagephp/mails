@@ -2,6 +2,10 @@
 
 All notable changes to `filament-mails` will be documented in this file.
 
+## v3.0.10 - 2026-03-26
+
+**Full Changelog**: https://github.com/backstagephp/mails/compare/v3.0.9...v3.0.10
+
 ## v3.0.9 - 2026-03-26
 
 **Full Changelog**: https://github.com/backstagephp/mails/compare/v3.0.8...v3.0.9
