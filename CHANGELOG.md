@@ -2,6 +2,16 @@
 
 All notable changes to `filament-mails` will be documented in this file.
 
+## v3.0.8 - 2026-03-26
+
+### What's Changed
+
+* Bump dependabot/fetch-metadata from 2.4.0 to 2.5.0 by @dependabot[bot] in https://github.com/backstagephp/mails/pull/66
+* release: Upgrade to Filament v5 and Livewire v4 by @Baspa in https://github.com/backstagephp/mails/pull/67
+* Bump ramsey/composer-install from 3 to 4 by @dependabot[bot] in https://github.com/backstagephp/mails/pull/70
+
+**Full Changelog**: https://github.com/backstagephp/mails/compare/v3.0.7...v3.0.8
+
 ## Added navigation sort config option - 2025-10-01
 
 ### What's Changed
