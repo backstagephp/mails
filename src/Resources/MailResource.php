@@ -390,10 +390,16 @@ class MailResource extends Resource
                     ->searchable(),
                 TextColumn::make('opens')
                     ->label(__('Opens'))
+                    ->badge()
+                    ->color('info')
+                    ->alignCenter()
                     ->tooltip(fn (Mail $record) => __('Last opened at :date', ['date' => $record->last_opened_at?->format('d-m-Y H:i')]))
                     ->sortable(),
                 TextColumn::make('clicks')
                     ->label(__('Clicks'))
+                    ->badge()
+                    ->color('clicked')
+                    ->alignCenter()
                     ->tooltip(fn (Mail $record) => __('Last clicked at :date', ['date' => $record->last_clicked_at?->format('d-m-Y H:i')]))
                     ->sortable(),
                 TextColumn::make('sent_at')
