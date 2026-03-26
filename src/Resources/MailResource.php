@@ -330,10 +330,10 @@ class MailResource extends Resource
                                         TextEntry::make('size')
                                             ->label(__('Size'))
                                             ->formatStateUsing(fn (int $state): string => match (true) {
-                                                $state >= 1073741824 => number_format($state / 1073741824, 2).' GB',
-                                                $state >= 1048576 => number_format($state / 1048576, 2).' MB',
-                                                $state >= 1024 => number_format($state / 1024, 2).' KB',
-                                                default => $state.' bytes',
+                                                $state >= 1073741824 => number_format($state / 1073741824, 2) . ' GB',
+                                                $state >= 1048576 => number_format($state / 1048576, 2) . ' MB',
+                                                $state >= 1024 => number_format($state / 1024, 2) . ' KB',
+                                                default => $state . ' bytes',
                                             }),
                                         TextEntry::make('mime')
                                             ->label(__('Mime Type')),
