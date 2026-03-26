@@ -13,6 +13,20 @@ class MailPreviewController extends Controller
         /** @var Mail $mail */
         $mail = Mail::find($request->mail);
 
-        return response($mail->html);
+        $resizeScript = <<<HTML
+        <script>
+            function postHeight() {
+                var height = document.documentElement.scrollHeight || document.body.scrollHeight;
+                window.parent.postMessage({ type: 'mails-iframe-resize', mailId: '{$mail->id}', height: height }, '*');
+            }
+            window.addEventListener('load', postHeight);
+            window.addEventListener('resize', postHeight);
+            new MutationObserver(postHeight).observe(document.body, { childList: true, subtree: true });
+        </script>
+        HTML;
+
+        $html = $mail->html . $resizeScript;
+
+        return response($html);
     }
 }

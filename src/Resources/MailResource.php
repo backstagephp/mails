@@ -278,6 +278,21 @@ class MailResource extends Resource
                                             ->label(__('HTML Content'))
                                             ->columnSpanFull(),
                                     ]),
+                                Tab::make('HTML (Formatted)')
+                                    ->schema([
+                                        TextEntry::make('html')
+                                            ->hiddenLabel()
+                                            ->extraAttributes(['class' => 'overflow-x-auto'])
+                                            ->formatStateUsing(fn (string $state, Mail $record): View => view(
+                                                'mails::mails.html-formatted',
+                                                ['html' => $state, 'mail' => $record],
+                                            ))
+                                            ->copyable()
+                                            ->copyMessage('Copied!')
+                                            ->copyMessageDuration(1500)
+                                            ->label(__('HTML Content (Formatted)'))
+                                            ->columnSpanFull(),
+                                    ]),
                                 Tab::make('Text')
                                     ->schema([
                                         TextEntry::make('text')
@@ -286,7 +301,7 @@ class MailResource extends Resource
                                             ->copyMessage('Copied!')
                                             ->copyMessageDuration(1500)
                                             ->label(__('Text Content'))
-                                            ->formatStateUsing(fn (string $state): HtmlString => new HtmlString(nl2br(e($state))))
+                                            ->formatStateUsing(fn (string $state): HtmlString => new HtmlString('<code>' . nl2br(e($state)) . '</code>'))
                                             ->columnSpanFull(),
                                     ]),
                             ])->columnSpanFull(),
@@ -308,17 +323,22 @@ class MailResource extends Resource
                             ->label(__('Attachments'))
                             ->visible(fn (Mail $record) => $record->attachments->count() > 0)
                             ->schema([
-                                Grid::make(3)
+                                Grid::make(4)
                                     ->schema([
                                         TextEntry::make('filename')
                                             ->label(__('Name')),
                                         TextEntry::make('size')
-                                            ->label(__('Size')),
+                                            ->label(__('Size'))
+                                            ->formatStateUsing(fn (int $state): string => match (true) {
+                                                $state >= 1073741824 => number_format($state / 1073741824, 2) . ' GB',
+                                                $state >= 1048576 => number_format($state / 1048576, 2) . ' MB',
+                                                $state >= 1024 => number_format($state / 1024, 2) . ' KB',
+                                                default => $state . ' bytes',
+                                            }),
                                         TextEntry::make('mime')
                                             ->label(__('Mime Type')),
                                         ViewEntry::make('uuid')
                                             ->label(__('Download'))
-                                            ->formatStateUsing(fn ($record) => $record)
                                             ->view('mails::mails.download'),
                                     ]),
                             ]),
@@ -392,7 +412,6 @@ class MailResource extends Resource
             ])
             ->recordActions([
                 ViewAction::make()
-                    // ->url(null)
                     ->modal()
                     ->slideOver()
                     ->label(__('View'))
