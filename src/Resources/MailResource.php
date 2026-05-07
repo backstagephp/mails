@@ -107,22 +107,22 @@ class MailResource extends Resource
                                                     ->label(__('Subject')),
                                                 TextEntry::make('from')
                                                     ->label(__('From'))
-                                                    ->formatStateUsing(fn (Mail $record) => self::formatMailState($record->from)),
+                                                    ->state(fn (Mail $record): string => self::formatMailState($record->from ?? [])),
                                                 TextEntry::make('to')
                                                     ->label(__('Recipient(s)'))
-                                                    ->formatStateUsing(fn (Mail $record) => self::formatMailState($record->to)),
+                                                    ->state(fn (Mail $record): string => self::formatMailState($record->to ?? [])),
                                                 TextEntry::make('cc')
                                                     ->label(__('CC'))
                                                     ->default('-')
-                                                    ->formatStateUsing(fn (Mail $record) => self::formatMailState($record->cc ?? [])),
+                                                    ->state(fn (Mail $record): string => self::formatMailState($record->cc ?? [])),
                                                 TextEntry::make('bcc')
                                                     ->label(__('BCC'))
                                                     ->default('-')
-                                                    ->formatStateUsing(fn (Mail $record) => self::formatMailState($record->bcc ?? [])),
+                                                    ->state(fn (Mail $record): string => self::formatMailState($record->bcc ?? [])),
                                                 TextEntry::make('reply_to')
                                                     ->default('-')
                                                     ->label(__('Reply To'))
-                                                    ->formatStateUsing(fn (Mail $record) => self::formatMailState($record->reply_to ?? [])),
+                                                    ->state(fn (Mail $record): string => self::formatMailState($record->reply_to ?? [])),
                                             ]),
                                     ]),
                                 Tab::make(__('Statistics'))
