@@ -364,8 +364,9 @@ class MailResource extends Resource
                 //     ->getIcon(fn (string $state): string => $state ? 'heroicon-o-paper-clip' : ''),
                 TextColumn::make('to')
                     ->label(__('Recipient(s)'))
+                    ->state(fn (Mail $record): string => self::formatMailState(emails: $record->to ?? [], mailOnly: true))
                     ->limit(50)
-                    ->formatStateUsing(fn (Mail $record) => self::formatMailState(emails: $record->to, mailOnly: true))
+                    ->tooltip(fn (Mail $record): ?string => self::formatMailState(emails: $record->to ?? [], mailOnly: true) ?: null)
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('opens')
