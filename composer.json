@@ -14,8 +14,13 @@
     "license": "MIT",
     "authors": [
         {
+            "name": "Mark van Eijk",
+            "email": "mark@backstagephp.com",
+            "role": "Developer"
+        },
+        {
             "name": "Baspa",
-            "email": "hello@baspa.dev",
+            "email": "bas@backstagephp.com",
             "role": "Developer"
         }
     ],
