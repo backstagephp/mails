@@ -3,6 +3,7 @@
 namespace Backstage\Mails\Resources\MailResource\Widgets;
 
 use Backstage\Mails\MailsPlugin;
+use Backstage\Mails\Resources\MailResource;
 use Filament\Facades\Filament;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -20,14 +21,14 @@ class MailStatsWidget extends BaseWidget
 
     protected function getStats(): array
     {
-        $class = config('mails.models.mail');
+        $counts = MailResource::getStatusCounts();
 
-        $bouncedMails = $class::where(fn ($query) => $query->softBounced()->orWhere(fn ($query) => $query->hardBounced()))->count();
-        $openedMails = $class::opened()->count();
-        $deliveredMails = $class::delivered()->count();
-        $clickedMails = $class::clicked()->count();
+        $bouncedMails = $counts['bounced'];
+        $openedMails = $counts['opened'];
+        $deliveredMails = $counts['delivered'];
+        $clickedMails = $counts['clicked'];
 
-        $mailCount = $class::count();
+        $mailCount = $counts['all'];
 
         if ($mailCount === 0) {
             return [];
