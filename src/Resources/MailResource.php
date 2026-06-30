@@ -33,6 +33,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\HtmlString;
 use Illuminate\View\View;
 
@@ -332,7 +333,7 @@ class MailResource extends Resource
             ->recordAction('view')
             ->recordUrl(null)
             ->defaultSort('created_at', 'desc')
-            ->paginated([50, 100, 'all'])
+            ->paginated([25, 50, 100])
             ->columns([
                 TextColumn::make('status')
                     ->label(__('Status'))
@@ -355,7 +356,20 @@ class MailResource extends Resource
                     ->label(__('Subject'))
                     ->limit(35)
                     ->sortable()
-                    ->searchable(['subject', 'html', 'text']),
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        $driver = $query->getModel()->getConnection()->getDriverName();
+
+                        // Use the FULLTEXT index on MySQL/MariaDB/PostgreSQL; fall
+                        // back to LIKE on drivers without fulltext support (e.g. sqlite).
+                        if (in_array($driver, ['mysql', 'mariadb', 'pgsql'], true)) {
+                            return $query->whereFullText(['subject', 'html', 'text'], $search);
+                        }
+
+                        return $query
+                            ->where('subject', 'like', "%{$search}%")
+                            ->orWhere('html', 'like', "%{$search}%")
+                            ->orWhere('text', 'like', "%{$search}%");
+                    }),
                 // IconColumn::make('attachments')
                 //     ->label('')
                 //     ->alignLeft()
@@ -527,6 +541,52 @@ class MailResource extends Resource
     {
         return [
             MailStatsWidget::class,
+        ];
+    }
+
+    /**
+     * Status counts shown in the index tab badges and the stats widget.
+     *
+     * Each status runs its own count query; on every page load that is a dozen
+     * queries that do not scale on large tables. The whole set is computed once
+     * and cached so both consumers share a single resolution per TTL window.
+     *
+     * @return array<string, int>
+     */
+    public static function getStatusCounts(): array
+    {
+        $ttl = config('mails.cache.counts_ttl', 60);
+
+        if (! $ttl) {
+            return self::resolveStatusCounts();
+        }
+
+        return Cache::remember('mails.status_counts', $ttl, fn (): array => self::resolveStatusCounts());
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    protected static function resolveStatusCounts(): array
+    {
+        /** @var class-string<Mail> $model */
+        $model = config('mails.models.mail');
+
+        $softBounced = $model::softBounced()->count();
+        $hardBounced = $model::hardBounced()->count();
+
+        return [
+            'all' => $model::count(),
+            'unsent' => $model::unsent()->count(),
+            'sent' => $model::sent()->count(),
+            'delivered' => $model::delivered()->count(),
+            'opened' => $model::opened()->count(),
+            'clicked' => $model::clicked()->count(),
+            'soft_bounced' => $softBounced,
+            'hard_bounced' => $hardBounced,
+            // Distinct mails that bounced either way (matches the bounced tab filter).
+            'bounced' => $model::bounced()->count(),
+            'complained' => $model::complained()->count(),
         ];
     }
 }
