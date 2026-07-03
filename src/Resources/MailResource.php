@@ -82,6 +82,20 @@ class MailResource extends Resource
         return config('mails.navigation.icon') ?? 'heroicon-o-envelope';
     }
 
+    public static function getNavigationItemActiveRoutePattern(): string | array
+    {
+        // The EventResource and SuppressionResource live under this resource's
+        // slug (mails/events, mails/suppressions), so Filament's default
+        // "{base}.*" wildcard would also match their routes and highlight this
+        // item on their pages. Enumerate only this resource's own page routes.
+        $baseName = static::getRouteBaseName();
+
+        return array_map(
+            fn (string $page): string => "{$baseName}.{$page}",
+            array_keys(static::getPages()),
+        );
+    }
+
     public function getTitle(): string
     {
         return __(config('mails.title') ?? 'Emails');
