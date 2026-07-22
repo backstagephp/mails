@@ -2,45 +2,6 @@
 
 All notable changes to `filament-mails` will be documented in this file.
 
-## v3.0.13 - 2026-03-26
-
-### What's Changed
-
-* Fix mail routes, preview improvements & formatted HTML tab by @markvaneijk in https://github.com/backstagephp/mails/pull/73
-* Style opens and clicks as centered badges by @markvaneijk in https://github.com/backstagephp/mails/pull/74
-
-**Full Changelog**: https://github.com/backstagephp/mails/compare/v3.0.12...v3.0.13
-
-## v3.0.12 - 2026-03-26
-
-### What's Changed
-
-* fix: auto-register mail routes in plugin by @markvaneijk in https://github.com/backstagephp/mails/pull/72
-
-**Full Changelog**: https://github.com/backstagephp/mails/compare/v3.0.11...v3.0.12
-
-## v3.0.11 - 2026-03-26
-
-**Full Changelog**: https://github.com/backstagephp/mails/compare/v3.0.10...v3.0.11
-
-## v3.0.10 - 2026-03-26
-
-**Full Changelog**: https://github.com/backstagephp/mails/compare/v3.0.9...v3.0.10
-
-## v3.0.9 - 2026-03-26
-
-**Full Changelog**: https://github.com/backstagephp/mails/compare/v3.0.8...v3.0.9
-
-## v3.0.8 - 2026-03-26
-
-### What's Changed
-
-* Bump dependabot/fetch-metadata from 2.4.0 to 2.5.0 by @dependabot[bot] in https://github.com/backstagephp/mails/pull/66
-* release: Upgrade to Filament v5 and Livewire v4 by @Baspa in https://github.com/backstagephp/mails/pull/67
-* Bump ramsey/composer-install from 3 to 4 by @dependabot[bot] in https://github.com/backstagephp/mails/pull/70
-
-**Full Changelog**: https://github.com/backstagephp/mails/compare/v3.0.7...v3.0.8
-
 ## Added navigation sort config option - 2025-10-01
 
 ### What's Changed

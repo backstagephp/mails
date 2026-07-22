@@ -17,28 +17,6 @@ class ListMails extends ListRecords
         return MailsPlugin::get()->userCanManageMails();
     }
 
-    public function mountAction(string $name, array $arguments = [], array $context = []): mixed
-    {
-        $result = parent::mountAction($name, $arguments, $context);
-
-        if ($name === 'view' && isset($context['table']) && isset($context['recordKey'])) {
-            $this->defaultTableAction = $name;
-            $this->defaultTableActionRecord = $context['recordKey'];
-        }
-
-        return $result;
-    }
-
-    public function unmountAction(bool $canCancelParentActions = true): void
-    {
-        parent::unmountAction($canCancelParentActions);
-
-        if (empty($this->mountedActions)) {
-            $this->defaultTableAction = null;
-            $this->defaultTableActionRecord = null;
-        }
-    }
-
     public static function getResource(): string
     {
         return config('mails.resources.mail', MailResource::class);
@@ -61,18 +39,20 @@ class ListMails extends ListRecords
 
         $class = new $class;
 
+        $counts = MailResource::getStatusCounts();
+
         return [
             'all' => Tab::make()
                 ->label(__('All'))
                 ->badgeColor('primary')
                 ->icon('heroicon-o-inbox-stack')
-                ->badge($class::count()),
+                ->badge($counts['all']),
 
             'unsent' => Tab::make()
                 ->label(__('Unsent'))
                 ->badgeColor('gray')
                 ->icon('heroicon-o-inbox')
-                ->badge($class::unsent()->count())
+                ->badge($counts['unsent'])
                 ->modifyQueryUsing(function (Builder $query) use ($class): Builder {
                     return $class->unsent();
                 }),
@@ -81,7 +61,7 @@ class ListMails extends ListRecords
                 ->label(__('Sent'))
                 ->badgeColor('info')
                 ->icon('heroicon-o-paper-airplane')
-                ->badge($class::sent()->count())
+                ->badge($counts['sent'])
                 ->modifyQueryUsing(function (Builder $query) use ($class): Builder {
                     return $class->sent();
                 }),
@@ -90,7 +70,7 @@ class ListMails extends ListRecords
                 ->label(__('Delivered'))
                 ->badgeColor('success')
                 ->icon('heroicon-o-inbox-arrow-down')
-                ->badge($class::delivered()->count())
+                ->badge($counts['delivered'])
                 ->modifyQueryUsing(function (Builder $query) use ($class): Builder {
                     return $class->delivered();
                 }),
@@ -99,7 +79,7 @@ class ListMails extends ListRecords
                 ->label(__('Opened'))
                 ->badgeColor('info')
                 ->icon('heroicon-o-envelope-open')
-                ->badge($class::opened()->count())
+                ->badge($counts['opened'])
                 ->modifyQueryUsing(function (Builder $query) use ($class): Builder {
                     return $class->opened();
                 }),
@@ -108,7 +88,7 @@ class ListMails extends ListRecords
                 ->label(__('Clicked'))
                 ->badgeColor('clicked')
                 ->icon('heroicon-o-cursor-arrow-rays')
-                ->badge($class::clicked()->count())
+                ->badge($counts['clicked'])
                 ->modifyQueryUsing(function (Builder $query) use ($class): Builder {
                     return $class->clicked();
                 }),
@@ -117,7 +97,7 @@ class ListMails extends ListRecords
                 ->label(__('Bounced'))
                 ->badgeColor('danger')
                 ->icon('heroicon-o-arrow-path-rounded-square')
-                ->badge(fn () => $class::softBounced()->count() + $class::hardBounced()->count())
+                ->badge($counts['bounced'])
                 ->modifyQueryUsing(function (Builder $query) use ($class): Builder {
                     return $query->where(function (Builder $subQuery) use ($class) {
                         return $subQuery->whereIn('id', $class::softBounced()->select('id'))
@@ -129,7 +109,7 @@ class ListMails extends ListRecords
                 ->label(__('Complained'))
                 ->badgeColor('gray')
                 ->icon('heroicon-o-face-frown')
-                ->badge($class::complained()->count())
+                ->badge($counts['complained'])
                 ->modifyQueryUsing(function (Builder $query) use ($class): Builder {
                     return $class->complained();
                 }),

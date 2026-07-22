@@ -3,6 +3,7 @@
 namespace Backstage\Mails\Tests;
 
 use Backstage\Mails\MailsServiceProvider;
+use Backstage\Mails\Tests\Fixtures\TestPanelProvider;
 use BladeUI\Heroicons\BladeHeroiconsServiceProvider;
 use BladeUI\Icons\BladeIconsServiceProvider;
 use Filament\Actions\ActionsServiceProvider;
@@ -45,6 +46,7 @@ class TestCase extends Orchestra
             TablesServiceProvider::class,
             WidgetsServiceProvider::class,
             MailsServiceProvider::class,
+            TestPanelProvider::class,
         ];
     }
 

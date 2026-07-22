@@ -33,6 +33,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\HtmlString;
 use Illuminate\View\View;
 
@@ -79,6 +80,20 @@ class MailResource extends Resource
     public static function getNavigationIcon(): ?string
     {
         return config('mails.navigation.icon') ?? 'heroicon-o-envelope';
+    }
+
+    public static function getNavigationItemActiveRoutePattern(): string | array
+    {
+        // The EventResource and SuppressionResource live under this resource's
+        // slug (mails/events, mails/suppressions), so Filament's default
+        // "{base}.*" wildcard would also match their routes and highlight this
+        // item on their pages. Enumerate only this resource's own page routes.
+        $baseName = static::getRouteBaseName();
+
+        return array_map(
+            fn (string $page): string => "{$baseName}.{$page}",
+            array_keys(static::getPages()),
+        );
     }
 
     public function getTitle(): string
@@ -278,21 +293,6 @@ class MailResource extends Resource
                                             ->label(__('HTML Content'))
                                             ->columnSpanFull(),
                                     ]),
-                                Tab::make('HTML (Formatted)')
-                                    ->schema([
-                                        TextEntry::make('html')
-                                            ->hiddenLabel()
-                                            ->extraAttributes(['class' => 'overflow-x-auto'])
-                                            ->formatStateUsing(fn (string $state, Mail $record): View => view(
-                                                'mails::mails.html-formatted',
-                                                ['html' => $state, 'mail' => $record],
-                                            ))
-                                            ->copyable()
-                                            ->copyMessage('Copied!')
-                                            ->copyMessageDuration(1500)
-                                            ->label(__('HTML Content (Formatted)'))
-                                            ->columnSpanFull(),
-                                    ]),
                                 Tab::make('Text')
                                     ->schema([
                                         TextEntry::make('text')
@@ -301,7 +301,7 @@ class MailResource extends Resource
                                             ->copyMessage('Copied!')
                                             ->copyMessageDuration(1500)
                                             ->label(__('Text Content'))
-                                            ->formatStateUsing(fn (string $state): HtmlString => new HtmlString('<code>' . nl2br(e($state)) . '</code>'))
+                                            ->formatStateUsing(fn (string $state): HtmlString => new HtmlString(nl2br(e($state))))
                                             ->columnSpanFull(),
                                     ]),
                             ])->columnSpanFull(),
@@ -323,22 +323,17 @@ class MailResource extends Resource
                             ->label(__('Attachments'))
                             ->visible(fn (Mail $record) => $record->attachments->count() > 0)
                             ->schema([
-                                Grid::make(4)
+                                Grid::make(3)
                                     ->schema([
                                         TextEntry::make('filename')
                                             ->label(__('Name')),
                                         TextEntry::make('size')
-                                            ->label(__('Size'))
-                                            ->formatStateUsing(fn (int $state): string => match (true) {
-                                                $state >= 1073741824 => number_format($state / 1073741824, 2) . ' GB',
-                                                $state >= 1048576 => number_format($state / 1048576, 2) . ' MB',
-                                                $state >= 1024 => number_format($state / 1024, 2) . ' KB',
-                                                default => $state . ' bytes',
-                                            }),
+                                            ->label(__('Size')),
                                         TextEntry::make('mime')
                                             ->label(__('Mime Type')),
                                         ViewEntry::make('uuid')
                                             ->label(__('Download'))
+                                            ->formatStateUsing(fn ($record) => $record)
                                             ->view('mails::mails.download'),
                                     ]),
                             ]),
@@ -352,7 +347,7 @@ class MailResource extends Resource
             ->recordAction('view')
             ->recordUrl(null)
             ->defaultSort('created_at', 'desc')
-            ->paginated([50, 100, 'all'])
+            ->paginated([25, 50, 100])
             ->columns([
                 TextColumn::make('status')
                     ->label(__('Status'))
@@ -375,7 +370,20 @@ class MailResource extends Resource
                     ->label(__('Subject'))
                     ->limit(35)
                     ->sortable()
-                    ->searchable(['subject', 'html', 'text']),
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        $driver = $query->getModel()->getConnection()->getDriverName();
+
+                        // Use the FULLTEXT index on MySQL/MariaDB/PostgreSQL; fall
+                        // back to LIKE on drivers without fulltext support (e.g. sqlite).
+                        if (in_array($driver, ['mysql', 'mariadb', 'pgsql'], true)) {
+                            return $query->whereFullText(['subject', 'html', 'text'], $search);
+                        }
+
+                        return $query
+                            ->where('subject', 'like', "%{$search}%")
+                            ->orWhere('html', 'like', "%{$search}%")
+                            ->orWhere('text', 'like', "%{$search}%");
+                    }),
                 // IconColumn::make('attachments')
                 //     ->label('')
                 //     ->alignLeft()
@@ -390,16 +398,10 @@ class MailResource extends Resource
                     ->searchable(),
                 TextColumn::make('opens')
                     ->label(__('Opens'))
-                    ->badge()
-                    ->color('info')
-                    ->alignCenter()
                     ->tooltip(fn (Mail $record) => __('Last opened at :date', ['date' => $record->last_opened_at?->format('d-m-Y H:i')]))
                     ->sortable(),
                 TextColumn::make('clicks')
                     ->label(__('Clicks'))
-                    ->badge()
-                    ->color('clicked')
-                    ->alignCenter()
                     ->tooltip(fn (Mail $record) => __('Last clicked at :date', ['date' => $record->last_clicked_at?->format('d-m-Y H:i')]))
                     ->sortable(),
                 TextColumn::make('sent_at')
@@ -418,6 +420,7 @@ class MailResource extends Resource
             ])
             ->recordActions([
                 ViewAction::make()
+                    // ->url(null)
                     ->modal()
                     ->slideOver()
                     ->label(__('View'))
@@ -552,6 +555,52 @@ class MailResource extends Resource
     {
         return [
             MailStatsWidget::class,
+        ];
+    }
+
+    /**
+     * Status counts shown in the index tab badges and the stats widget.
+     *
+     * Each status runs its own count query; on every page load that is a dozen
+     * queries that do not scale on large tables. The whole set is computed once
+     * and cached so both consumers share a single resolution per TTL window.
+     *
+     * @return array<string, int>
+     */
+    public static function getStatusCounts(): array
+    {
+        $ttl = config('mails.cache.counts_ttl', 60);
+
+        if (! $ttl) {
+            return self::resolveStatusCounts();
+        }
+
+        return Cache::remember('mails.status_counts', $ttl, fn (): array => self::resolveStatusCounts());
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    protected static function resolveStatusCounts(): array
+    {
+        /** @var class-string<Mail> $model */
+        $model = config('mails.models.mail');
+
+        $softBounced = $model::softBounced()->count();
+        $hardBounced = $model::hardBounced()->count();
+
+        return [
+            'all' => $model::count(),
+            'unsent' => $model::unsent()->count(),
+            'sent' => $model::sent()->count(),
+            'delivered' => $model::delivered()->count(),
+            'opened' => $model::opened()->count(),
+            'clicked' => $model::clicked()->count(),
+            'soft_bounced' => $softBounced,
+            'hard_bounced' => $hardBounced,
+            // Distinct mails that bounced either way (matches the bounced tab filter).
+            'bounced' => $model::bounced()->count(),
+            'complained' => $model::complained()->count(),
         ];
     }
 }

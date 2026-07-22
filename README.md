@@ -1,6 +1,4 @@
-# View all sent emails and events from your Laravel app with Filament
-
-## Backstage Mails
+# Mails
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/backstage/mails.svg?style=flat-square)](https://packagist.org/packages/backstage/mails)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/backstagephp/mails/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/backstagephp/mails/actions?query=workflow%3Arun-tests+branch%3Amain)
@@ -62,7 +60,19 @@ Optionally, you can publish the views using
 php artisan vendor:publish --tag="mails-views"
 ```
 
-Add the plugin to your `PanelProvider`
+Add the routes to the PanelProvider using the `routes()` method, like this:
+
+```php
+use Backstage\Mails\Facades\Mails;
+
+public function panel(Panel $panel): Panel
+{
+    return $panel
+        ->routes(fn () => Mails::routes());
+}
+```
+
+Then add the plugin to your `PanelProvider`
 
 ```php
 use Backstage\Mails\MailsPlugin;
@@ -105,6 +115,22 @@ $panel
 ```
 
 This example demonstrates how to combine role-based and permission-based access control, providing a more robust and flexible approach to managing access to mail resources.
+
+### Tenant middleware and route protection
+
+If you want to protect the mail routes with your (tenant) middleware, you can do so by adding the routes to the `tenantRoutes`:
+
+```php
+use Backstage\Mails\MailsPlugin;
+use Backstage\Mails\Facades\Mails;
+
+public function panel(Panel $panel): Panel
+{
+    return $panel
+        ->plugin(MailsPlugin::make())
+        ->tenantRoutes(fn() => Mails::routes());
+}
+```
 
 > [!IMPORTANT]
 > For setting up the webhooks to register mail events, please look into the README of [Laravel Mails](https://github.com/backstagephp/laravel-mails), the underlying package that powers this package.
