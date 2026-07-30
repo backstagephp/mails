@@ -6,6 +6,13 @@ on:
   pull_request:
     branches: [main]
 
+# This package requires backstage/laravel-mails at "self.version". Composer
+# derives the root version from git, and on a shallow CI checkout of a feature
+# branch that becomes dev-<branch-name>, which does not exist in laravel-mails.
+# Pin it to the branch the split repo tracks so resolution succeeds everywhere.
+env:
+  COMPOSER_ROOT_VERSION: dev-main
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
