@@ -72,3 +72,78 @@ it('allows a permitted user to preview a mail', function () {
         ->assertOk()
         ->assertSee('secret');
 });
+
+it('redirects a guest away from an attachment download', function () {
+    Storage::fake('local');
+
+    $mail = Mail::factory()->create();
+    $attachment = attachmentFor($mail);
+
+    $this->get(downloadUrl($mail, $attachment))
+        ->assertRedirect(route('filament.admin.auth.login'));
+});
+
+it('does not serve an attachment belonging to a different mail', function () {
+    Storage::fake('local');
+
+    $mail = Mail::factory()->create();
+    $otherMail = Mail::factory()->create();
+    $attachmentOfOtherMail = attachmentFor($otherMail, 'secret.pdf');
+
+    MailsPlugin::get()->canManageMails(true);
+
+    $this->actingAs(mailUser())
+        ->get(downloadUrl($mail, $attachmentOfOtherMail))
+        ->assertNotFound();
+});
+
+it('serves an attachment that belongs to the mail', function () {
+    Storage::fake('local');
+
+    $mail = Mail::factory()->create();
+    $attachment = attachmentFor($mail, 'invoice.pdf', 'INVOICE BODY');
+
+    MailsPlugin::get()->canManageMails(true);
+
+    $response = $this->actingAs(mailUser())
+        ->get(downloadUrl($mail, $attachment))
+        ->assertOk();
+
+    expect($response->streamedContent())->toBe('INVOICE BODY');
+});
+
+it('returns 404 for an unknown attachment', function () {
+    Storage::fake('local');
+
+    $mail = Mail::factory()->create();
+
+    MailsPlugin::get()->canManageMails(true);
+
+    $url = route('filament.admin.mails.attachment.download', [
+        'mail' => $mail->id,
+        'attachment' => 99999,
+        'filename' => 'nope.pdf',
+    ]);
+
+    $this->actingAs(mailUser())->get($url)->assertNotFound();
+});
+
+it('returns 404 for an unknown mail preview', function () {
+    MailsPlugin::get()->canManageMails(true);
+
+    $url = route('filament.admin.mails.preview', ['mail' => 99999]);
+
+    $this->actingAs(mailUser())->get($url)->assertNotFound();
+});
+
+it('sends hardening headers with the preview', function () {
+    $mail = Mail::factory()->create(['html' => '<p>secret</p>']);
+
+    MailsPlugin::get()->canManageMails(true);
+
+    $this->actingAs(mailUser())
+        ->get(previewUrl($mail))
+        ->assertOk()
+        ->assertHeader('X-Content-Type-Options', 'nosniff')
+        ->assertHeader('Content-Security-Policy', "frame-ancestors 'self'");
+});
