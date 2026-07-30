@@ -1,6 +1,7 @@
 <?php
 
 use Backstage\Mails\Laravel\Models\Mail;
+use Backstage\Mails\MailsPlugin;
 use Backstage\Mails\Tests\Fixtures\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -49,4 +50,25 @@ it('redirects a guest away from the mail preview', function () {
 
     $this->get(previewUrl($mail))
         ->assertRedirect(route('filament.admin.auth.login'));
+});
+
+it('forbids an authenticated user without mail permissions', function () {
+    $mail = Mail::factory()->create(['html' => '<p>secret</p>']);
+
+    MailsPlugin::get()->canManageMails(false);
+
+    $this->actingAs(mailUser())
+        ->get(previewUrl($mail))
+        ->assertForbidden();
+});
+
+it('allows a permitted user to preview a mail', function () {
+    $mail = Mail::factory()->create(['html' => '<p>secret</p>']);
+
+    MailsPlugin::get()->canManageMails(true);
+
+    $this->actingAs(mailUser())
+        ->get(previewUrl($mail))
+        ->assertOk()
+        ->assertSee('secret');
 });
