@@ -231,6 +231,7 @@ class MailResource extends Resource
                                                         EventType::COMPLAINED => 'warning',
                                                         EventType::UNSUBSCRIBED => 'danger',
                                                         EventType::ACCEPTED => 'success',
+                                                        default => 'gray',
                                                     })
                                                     ->formatStateUsing(function (EventType $state) {
                                                         return ucfirst($state->value);
