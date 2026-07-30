@@ -2,9 +2,20 @@ name: PHPStan
 
 on:
   push:
+    branches: [main]
     paths:
       - '**.php'
       - 'phpstan.neon.dist'
+  pull_request:
+    branches: [main]
+    paths:
+      - '**.php'
+      - 'phpstan.neon.dist'
+
+# See the note in run-tests.yml: "self.version" resolves from the git branch, so
+# a shallow CI checkout needs this pinned for dependency resolution to succeed.
+env:
+  COMPOSER_ROOT_VERSION: dev-main
 
 jobs:
   phpstan:
