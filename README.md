@@ -60,7 +60,7 @@ Optionally, you can publish the views using
 php artisan vendor:publish --tag="mails-views"
 ```
 
-Add the routes to the PanelProvider using the `routes()` method, like this:
+Add the routes to the PanelProvider using the `authenticatedRoutes()` method, like this:
 
 ```php
 use Backstage\Mails\Facades\Mails;
@@ -68,9 +68,16 @@ use Backstage\Mails\Facades\Mails;
 public function panel(Panel $panel): Panel
 {
     return $panel
-        ->routes(fn () => Mails::routes());
+        ->authenticatedRoutes(fn () => Mails::routes());
 }
 ```
+
+> [!NOTE]
+> `authenticatedRoutes()` registers the routes inside the panel's authentication
+> middleware. The preview and attachment routes also enforce authentication and
+> the `canManageMails()` check themselves, so they stay protected even if you
+> register them with `routes()` — but `authenticatedRoutes()` is the correct
+> place for them.
 
 Then add the plugin to your `PanelProvider`
 
@@ -116,9 +123,14 @@ $panel
 
 This example demonstrates how to combine role-based and permission-based access control, providing a more robust and flexible approach to managing access to mail resources.
 
+The `canManageMails()` check also guards the mail preview and attachment download
+routes. Unauthenticated visitors are redirected to the panel login, authenticated
+users without permission receive a 403, and attachments are only served through
+the mail record they belong to.
+
 ### Tenant middleware and route protection
 
-If you want to protect the mail routes with your (tenant) middleware, you can do so by adding the routes to the `tenantRoutes`:
+If you want to protect the mail routes with your (tenant) middleware, you can do so by adding the routes to the `authenticatedTenantRoutes`:
 
 ```php
 use Backstage\Mails\MailsPlugin;
@@ -128,7 +140,7 @@ public function panel(Panel $panel): Panel
 {
     return $panel
         ->plugin(MailsPlugin::make())
-        ->tenantRoutes(fn() => Mails::routes());
+        ->authenticatedTenantRoutes(fn () => Mails::routes());
 }
 ```
 
