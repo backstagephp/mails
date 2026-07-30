@@ -4,6 +4,7 @@ namespace Backstage\Mails\Tests;
 
 use Backstage\Mails\Laravel\MailsServiceProvider as LaravelMailsServiceProvider;
 use Backstage\Mails\MailsServiceProvider;
+use Backstage\Mails\Tests\Fixtures\TenantPanelProvider;
 use Backstage\Mails\Tests\Fixtures\TestPanelProvider;
 use Backstage\Mails\Tests\Fixtures\User;
 use BladeUI\Heroicons\BladeHeroiconsServiceProvider;
@@ -53,6 +54,7 @@ class TestCase extends Orchestra
             LaravelMailsServiceProvider::class,
             MailsServiceProvider::class,
             TestPanelProvider::class,
+            TenantPanelProvider::class,
         ];
     }
 
@@ -64,6 +66,12 @@ class TestCase extends Orchestra
 
     protected function defineDatabaseMigrations(): void
     {
+        Schema::create('teams', function (Blueprint $table): void {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
+        });
+
         Schema::create('users', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
