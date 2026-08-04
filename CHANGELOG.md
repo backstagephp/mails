@@ -2,6 +2,21 @@
 
 All notable changes to `filament-mails` will be documented in this file.
 
+## v3.0.15 - 2026-08-04
+
+Compatibility fix for **Filament v5.7.0+**.
+
+Filament v5.7.0 widened `InteractsWithActions::unmountAction()` from `bool $canCancelParentActions = true` to `bool|string|null $cancelParentActions = null`. The narrower override in `ListMails` no longer matched, so Laravel died during package discovery with:
+
+```
+Declaration of Backstage\Mails\Resources\MailResource\Pages\ListMails::unmountAction(bool $canCancelParentActions = true): void
+must be compatible with Filament\Pages\BasePage::unmountAction(string|bool|null $cancelParentActions = null): void
+
+```
+The override now accepts the widest type and forwards only the arguments it actually received, so it works across the whole `filament/filament: ^5.0` range — the parent keeps its own default on either signature, and the new "cancel up to a named parent action" string form passes through untouched.
+
+**What to do:** `composer update backstage/mails` — no code changes needed on your side.
+
 ## Added navigation sort config option - 2025-10-01
 
 ### What's Changed
