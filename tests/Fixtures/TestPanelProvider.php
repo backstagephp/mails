@@ -2,7 +2,6 @@
 
 namespace Backstage\Mails\Tests\Fixtures;
 
-use Backstage\Mails\Mails;
 use Backstage\Mails\MailsPlugin;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -18,7 +17,6 @@ class TestPanelProvider extends PanelProvider
             ->login()
             ->authGuard('web')
             ->topNavigation()
-            ->routes(fn () => Mails::routes())
             ->plugin(MailsPlugin::make());
     }
 }

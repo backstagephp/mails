@@ -2,7 +2,6 @@
 
 namespace Backstage\Mails\Tests\Fixtures;
 
-use Backstage\Mails\Mails;
 use Backstage\Mails\MailsPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Panel;
@@ -20,7 +19,6 @@ class TenantPanelProvider extends PanelProvider
             // Filament's scaffolded panel provider sets this; it is not a framework default.
             ->authMiddleware([Authenticate::class])
             ->tenant(Team::class)
-            ->authenticatedTenantRoutes(fn () => Mails::routes())
             ->plugin(MailsPlugin::make());
     }
 }

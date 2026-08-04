@@ -60,26 +60,7 @@ Optionally, you can publish the views using
 php artisan vendor:publish --tag="mails-views"
 ```
 
-Add the routes to the PanelProvider using the `authenticatedRoutes()` method, like this:
-
-```php
-use Backstage\Mails\Facades\Mails;
-
-public function panel(Panel $panel): Panel
-{
-    return $panel
-        ->authenticatedRoutes(fn () => Mails::routes());
-}
-```
-
-> [!NOTE]
-> `authenticatedRoutes()` registers the routes inside the panel's authentication
-> middleware. The preview and attachment routes also enforce authentication and
-> the `canManageMails()` check themselves, so they stay protected even if you
-> register them with `routes()` — but `authenticatedRoutes()` is the correct
-> place for them.
-
-Then add the plugin to your `PanelProvider`
+Add the plugin to your `PanelProvider`
 
 ```php
 use Backstage\Mails\MailsPlugin;
@@ -128,21 +109,10 @@ routes. Unauthenticated visitors are redirected to the panel login, authenticate
 users without permission receive a 403, and attachments are only served through
 the mail record they belong to.
 
-### Tenant middleware and route protection
-
-If you want to protect the mail routes with your (tenant) middleware, you can do so by adding the routes to the `authenticatedTenantRoutes`:
-
-```php
-use Backstage\Mails\MailsPlugin;
-use Backstage\Mails\Facades\Mails;
-
-public function panel(Panel $panel): Panel
-{
-    return $panel
-        ->plugin(MailsPlugin::make())
-        ->authenticatedTenantRoutes(fn () => Mails::routes());
-}
-```
+The plugin registers the preview and attachment routes for you, through
+`authenticatedRoutes()` and — on panels with tenancy — `authenticatedTenantRoutes()`,
+so they sit inside the panel's authentication and tenant middleware. They
+additionally enforce authentication and the `canManageMails()` check themselves.
 
 > [!IMPORTANT]
 > For setting up the webhooks to register mail events, please look into the README of [Laravel Mails](https://github.com/backstagephp/laravel-mails), the underlying package that powers this package.
