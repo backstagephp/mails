@@ -4,6 +4,7 @@ namespace Backstage\Mails\Tests;
 
 use Backstage\Mails\MailsServiceProvider;
 use Backstage\Mails\Tests\Filament\AdminPanelProvider;
+use Backstage\Mails\Tests\Filament\TenantPanelProvider;
 use BladeUI\Heroicons\BladeHeroiconsServiceProvider;
 use BladeUI\Icons\BladeIconsServiceProvider;
 use Filament\Actions\ActionsServiceProvider;
@@ -58,5 +59,6 @@ class TestCase extends Orchestra
         config()->set('database.default', 'testing');
 
         $app->register(AdminPanelProvider::class);
+        $app->register(TenantPanelProvider::class);
     }
 }

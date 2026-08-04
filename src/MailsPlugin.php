@@ -33,8 +33,18 @@ class MailsPlugin implements Plugin
                 config('mails.resources.event', EventResource::class),
                 config('mails.resources.suppression', SuppressionResource::class),
             ])
-            ->routes(fn () => Mails::routes())
-            ->tenantRoutes(fn () => Mails::routes());
+            // Registering both would define the routes twice under the same
+            // names, and the tenant-less variant would win the name lookup.
+            ->routes(function (Panel $panel): void {
+                if (! $panel->hasTenancy()) {
+                    Mails::routes();
+                }
+            })
+            ->tenantRoutes(function (Panel $panel): void {
+                if ($panel->hasTenancy()) {
+                    Mails::routes();
+                }
+            });
     }
 
     public function boot(Panel $panel): void
