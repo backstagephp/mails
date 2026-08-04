@@ -32,7 +32,9 @@ class MailsPlugin implements Plugin
                 config('mails.resources.mail', MailResource::class),
                 config('mails.resources.event', EventResource::class),
                 config('mails.resources.suppression', SuppressionResource::class),
-            ]);
+            ])
+            ->routes(fn () => Mails::routes())
+            ->tenantRoutes(fn () => Mails::routes());
     }
 
     public function boot(Panel $panel): void
