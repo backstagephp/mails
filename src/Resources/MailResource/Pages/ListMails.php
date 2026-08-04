@@ -29,9 +29,15 @@ class ListMails extends ListRecords
         return $result;
     }
 
-    public function unmountAction(bool $canCancelParentActions = true): void
+    /**
+     * Filament widened this signature in v5.7.0 (bool $canCancelParentActions = true
+     * became bool|string|null $cancelParentActions = null), so accept the widest type
+     * and forward only the arguments we actually received to stay compatible with
+     * both signatures.
+     */
+    public function unmountAction(bool | string | null $cancelParentActions = null): void
     {
-        parent::unmountAction($canCancelParentActions);
+        parent::unmountAction(...func_get_args());
 
         if (empty($this->mountedActions)) {
             $this->defaultTableAction = null;
