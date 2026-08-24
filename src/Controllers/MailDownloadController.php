@@ -2,24 +2,20 @@
 
 namespace Backstage\Mails\Controllers;
 
-use Backstage\Mails\Laravel\Models\MailAttachment;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Config;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MailDownloadController extends Controller
 {
-    public function __invoke(...$arguments)
+    public function __invoke(Request $request): StreamedResponse
     {
-        if (count($arguments) === 4) {
-            [$tenant, $mail, $attachment, $filename] = $arguments;
-        } else {
-            [$mail, $attachment, $filename] = $arguments;
-            $tenant = null;
-        }
+        $mailModel = Config::string('mails.models.mail');
 
-        $attachmentModel = Config::get('mails.models.attachment');
-        /** @var MailAttachment $attachment */
-        $attachment = $attachmentModel::find($attachment);
+        $mail = $mailModel::findOrFail($request->route('mail'));
+
+        $attachment = $mail->attachments()->findOrFail($request->route('attachment'));
 
         return $attachment->downloadFileFromStorage();
     }

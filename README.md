@@ -60,7 +60,7 @@ Optionally, you can publish the views using
 php artisan vendor:publish --tag="mails-views"
 ```
 
-Add the routes to the PanelProvider using the `routes()` method, like this:
+Add the routes to the PanelProvider using the `authenticatedRoutes()` method, like this:
 
 ```php
 use Backstage\Mails\Facades\Mails;
@@ -68,9 +68,14 @@ use Backstage\Mails\Facades\Mails;
 public function panel(Panel $panel): Panel
 {
     return $panel
-        ->routes(fn () => Mails::routes());
+        ->authenticatedRoutes(fn () => Mails::routes());
 }
 ```
+
+The preview and attachment routes also enforce panel authentication and the
+`canManageMails()` check themselves, so they remain protected if they are
+registered with `routes()`. `authenticatedRoutes()` is still the recommended
+registration method.
 
 Then add the plugin to your `PanelProvider`
 
@@ -116,9 +121,13 @@ $panel
 
 This example demonstrates how to combine role-based and permission-based access control, providing a more robust and flexible approach to managing access to mail resources.
 
+The same `canManageMails()` check protects mail previews and attachment
+downloads. Attachments can only be downloaded through the mail record they
+belong to, and previews run in a sandboxed iframe.
+
 ### Tenant middleware and route protection
 
-If you want to protect the mail routes with your (tenant) middleware, you can do so by adding the routes to the `tenantRoutes`:
+If you want to protect the mail routes with your tenant middleware, add them to `authenticatedTenantRoutes()`:
 
 ```php
 use Backstage\Mails\MailsPlugin;
@@ -128,7 +137,7 @@ public function panel(Panel $panel): Panel
 {
     return $panel
         ->plugin(MailsPlugin::make())
-        ->tenantRoutes(fn() => Mails::routes());
+        ->authenticatedTenantRoutes(fn () => Mails::routes());
 }
 ```
 
