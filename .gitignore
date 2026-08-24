@@ -1,3 +1,6 @@
+# https://github.com/jeromecoloma/sessionx
+.sessionx.yaml
+
 .DS_Store
 .idea
 .phpunit.result.cache
