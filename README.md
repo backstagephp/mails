@@ -104,6 +104,8 @@ $panel
 
 This example demonstrates how to combine role-based and permission-based access control, providing a more robust and flexible approach to managing access to mail resources.
 
+The same `canManageMails()` check protects mail previews and attachment downloads. The plugin registers both routes as authenticated panel routes and they additionally enforce panel authentication and the permission check themselves. Attachments can only be downloaded through the mail record they belong to, and previews are rendered in a sandboxed iframe.
+
 > [!IMPORTANT]
 > For setting up the webhooks to register mail events, please look into the README of [Laravel Mails](https://github.com/backstagephp/laravel-mails), the underlying package that powers this package.
 
