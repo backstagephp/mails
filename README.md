@@ -114,6 +114,11 @@ The plugin registers the preview and attachment routes for you, through
 so they sit inside the panel's authentication and tenant middleware. They
 additionally enforce authentication and the `canManageMails()` check themselves.
 
+Stored email HTML is never executed in the context of the panel: the preview tab
+renders it in a sandboxed iframe, and the preview route serves it with a
+sandboxing `Content-Security-Policy` plus `Referrer-Policy`, `X-Frame-Options`
+and `X-Content-Type-Options` headers.
+
 > [!IMPORTANT]
 > For setting up the webhooks to register mail events, please look into the README of [Laravel Mails](https://github.com/backstagephp/laravel-mails), the underlying package that powers this package.
 

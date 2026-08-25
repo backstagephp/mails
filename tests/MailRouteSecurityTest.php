@@ -144,6 +144,21 @@ it('sends hardening headers with the preview', function () {
     $this->actingAs(mailUser())
         ->get(previewUrl($mail))
         ->assertOk()
+        ->assertHeader('Content-Type', 'text/html; charset=UTF-8')
+        ->assertHeader('Content-Security-Policy', "sandbox; frame-ancestors 'self'")
+        ->assertHeader('Referrer-Policy', 'no-referrer')
         ->assertHeader('X-Content-Type-Options', 'nosniff')
-        ->assertHeader('Content-Security-Policy', "frame-ancestors 'self'");
+        ->assertHeader('X-Frame-Options', 'SAMEORIGIN');
+});
+
+it('renders stored html in a sandboxed inline preview', function () {
+    $html = '<script>window.parent.document.body.remove()</script><p>Preview</p>';
+
+    $preview = view('mails::mails.preview', ['html' => $html])->render();
+
+    expect($preview)
+        ->toContain('srcdoc="&lt;script&gt;')
+        ->toContain('sandbox')
+        ->toContain('referrerpolicy="no-referrer"')
+        ->not->toContain('src="');
 });
