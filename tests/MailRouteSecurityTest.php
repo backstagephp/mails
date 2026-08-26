@@ -3,7 +3,9 @@
 use Backstage\Mails\Laravel\Models\Mail;
 use Backstage\Mails\Laravel\Models\MailAttachment;
 use Backstage\Mails\MailsPlugin;
+use Backstage\Mails\Tests\Fixtures\DenyOddMailPolicy;
 use Backstage\Mails\Tests\Fixtures\User;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -166,4 +168,27 @@ it('renders stored html in a sandboxed inline preview', function () {
         ->toContain('sandbox')
         ->toContain('referrerpolicy="no-referrer"')
         ->not->toContain('src="');
+});
+
+it('consults the host mail policy for the preview when one is registered', function () {
+    Gate::policy(Mail::class, DenyOddMailPolicy::class);
+    MailsPlugin::get()->canManageMails(true);
+
+    $user = mailUser();
+    $denied = Mail::factory()->create(['id' => 1, 'html' => '<p>secret</p>']);
+    $allowed = Mail::factory()->create(['id' => 2, 'html' => '<p>visible</p>']);
+
+    $this->actingAs($user)->get(previewUrl($denied))->assertForbidden();
+    $this->actingAs($user)->get(previewUrl($allowed))->assertSuccessful()->assertSee('visible');
+});
+
+it('consults the host mail policy for attachment downloads when one is registered', function () {
+    Storage::fake('local');
+    Gate::policy(Mail::class, DenyOddMailPolicy::class);
+    MailsPlugin::get()->canManageMails(true);
+
+    $denied = Mail::factory()->create(['id' => 1]);
+    $attachment = attachmentFor($denied);
+
+    $this->actingAs(mailUser())->get(downloadUrl($denied, $attachment))->assertForbidden();
 });

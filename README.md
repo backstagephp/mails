@@ -125,6 +125,22 @@ The same `canManageMails()` check protects mail previews and attachment
 downloads. Attachments can only be downloaded through the mail record they
 belong to, and previews run in a sandboxed iframe.
 
+`canManageMails()` decides whether a user may use the mail log at all. If you
+also need to decide per mail — for example in a multi-tenant application where
+a user may only open mails that belong to their own tenant — register a policy
+for your mail model. When one exists, the preview and attachment routes
+additionally authorize the `view` ability against the requested mail:
+
+```php
+class MailPolicy
+{
+    public function view(User $user, Mail $mail): bool
+    {
+        return $user->tenant_id === $mail->tenant_id;
+    }
+}
+```
+
 ### Tenant middleware and route protection
 
 If you want to protect the mail routes with your tenant middleware, add them to `authenticatedTenantRoutes()`:
