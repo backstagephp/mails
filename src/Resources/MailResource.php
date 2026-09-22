@@ -29,8 +29,10 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\PaginationMode;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -342,6 +344,106 @@ class MailResource extends Resource
             ]);
     }
 
+    /**
+     * Columns the index needs: everything read by the table columns, the
+     * `status` accessor, the resend action and the record key.
+     *
+     * Deliberately excludes `html` and `text`, which are LONGTEXT columns
+     * holding entire mail bodies. `select *` pulls them for every row on
+     * every page load, which is what makes the index crawl once the table
+     * grows. The view/resend modals re-resolve the record with a separate
+     * query (see `modifyQueryUsing()`), so they still get the full row.
+     *
+     * @return array<int, string>
+     */
+    protected static function getIndexColumns(): array
+    {
+        return [
+            'id',
+            'uuid',
+            'subject',
+            'to',
+            'cc',
+            'bcc',
+            'opens',
+            'clicks',
+            'sent_at',
+            'resent_at',
+            'delivered_at',
+            'last_opened_at',
+            'last_clicked_at',
+            'complained_at',
+            'soft_bounced_at',
+            'hard_bounced_at',
+            'created_at',
+        ];
+    }
+
+    /**
+     * Search the mail content and the recipients in one go.
+     *
+     * The two halves each use their own index: FULLTEXT for subject/body,
+     * B-tree prefix matches on the recipients table. They are combined with
+     * a UNION in a derived table rather than `... OR ...`, because an OR
+     * across two different indexes makes MySQL fall back to scanning the
+     * whole mails table, which is what made searching unusable before.
+     */
+    protected static function applySearch(Builder $query, string $search): Builder
+    {
+        /** @var Mail $model */
+        $model = $query->getModel();
+        $connection = $model->getConnection();
+        $search = trim($search);
+
+        // Recipients are stored lowercased; a leading @ means "this domain".
+        $recipient = mb_strtolower(ltrim($search, '@'));
+
+        $matches = $connection->table($model::getRecipientsTable())
+            ->select($model->getForeignKey())
+            ->where(fn ($query) => $query
+                ->where('email', 'like', "{$recipient}%")
+                ->orWhere('name', 'like', "{$recipient}%")
+                ->orWhere('domain', 'like', "{$recipient}%"));
+
+        if ($contentMatches = static::contentSearchQuery($model, $search)) {
+            $matches = $contentMatches->union($matches);
+        }
+
+        return $query->whereIn(
+            $model->getQualifiedKeyName(),
+            $connection->query()
+                ->fromSub($matches, 'matches')
+                ->select($model->getKeyName()),
+        );
+    }
+
+    /**
+     * Ids of mails whose subject or body match the search, or null when the
+     * search has nothing left to match on.
+     */
+    protected static function contentSearchQuery(Mail $model, string $search): ?QueryBuilder
+    {
+        $connection = $model->getConnection();
+        $columns = ['subject', 'html', 'text'];
+        $query = $connection->table($model->getTable())->select($model->getKeyName());
+
+        return match ($connection->getDriverName()) {
+            // Boolean mode, because natural language mode ranks every match,
+            // which inside the union above took seconds for a common word.
+            // Operator characters are stripped so input is taken as plain
+            // words (the `@` of an address is the proximity operator).
+            'mysql', 'mariadb' => filled($terms = trim(preg_replace('/[+\-<>()~*"@]+/', ' ', $search)))
+                ? $query->whereFullText($columns, $terms, ['mode' => 'boolean'])
+                : null,
+            'pgsql' => $query->whereFullText($columns, $search),
+            // No fulltext support (e.g. sqlite).
+            default => $query->where(fn ($query) => $query
+                ->where('subject', 'like', "%{$search}%")
+                ->orWhere('html', 'like', "%{$search}%")
+                ->orWhere('text', 'like', "%{$search}%")),
+        };
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -349,6 +451,12 @@ class MailResource extends Resource
             ->recordUrl(null)
             ->defaultSort('created_at', 'desc')
             ->paginated([25, 50, 100])
+            ->when(
+                config('mails.pagination.simple', false),
+                fn (Table $table): Table => $table->paginationMode(PaginationMode::Simple),
+            )
+            ->searchable()
+            ->searchUsing(fn (Builder $query, string $search): Builder => static::applySearch($query, $search))
             ->columns([
                 TextColumn::make('status')
                     ->label(__('Status'))
@@ -370,21 +478,7 @@ class MailResource extends Resource
                 TextColumn::make('subject')
                     ->label(__('Subject'))
                     ->limit(35)
-                    ->sortable()
-                    ->searchable(query: function (Builder $query, string $search): Builder {
-                        $driver = $query->getModel()->getConnection()->getDriverName();
-
-                        // Use the FULLTEXT index on MySQL/MariaDB/PostgreSQL; fall
-                        // back to LIKE on drivers without fulltext support (e.g. sqlite).
-                        if (in_array($driver, ['mysql', 'mariadb', 'pgsql'], true)) {
-                            return $query->whereFullText(['subject', 'html', 'text'], $search);
-                        }
-
-                        return $query
-                            ->where('subject', 'like', "%{$search}%")
-                            ->orWhere('html', 'like', "%{$search}%")
-                            ->orWhere('text', 'like', "%{$search}%");
-                    }),
+                    ->sortable(),
                 // IconColumn::make('attachments')
                 //     ->label('')
                 //     ->alignLeft()
@@ -395,8 +489,7 @@ class MailResource extends Resource
                     ->label(__('Recipient(s)'))
                     ->limit(50)
                     ->getStateUsing(fn (Mail $record) => self::formatMailState(emails: $record->to ?? [], mailOnly: true))
-                    ->sortable()
-                    ->searchable(),
+                    ->sortable(),
                 TextColumn::make('opens')
                     ->label(__('Opens'))
                     ->tooltip(fn (Mail $record) => __('Last opened at :date', ['date' => $record->last_opened_at?->format('d-m-Y H:i')]))
@@ -410,12 +503,17 @@ class MailResource extends Resource
                     ->dateTime('d-m-Y H:i')
                     ->since()
                     ->tooltip(fn (Mail $record) => $record->sent_at?->format('d-m-Y H:i'))
-                    ->sortable()
-                    ->searchable(),
+                    ->sortable(),
             ])
-            ->modifyQueryUsing(
-                fn (Builder $query) => $query->with('attachments')
-            )
+            ->modifyQueryUsing(function (Builder $query, bool $isResolvingRecord): Builder {
+                // Resolving a single record backs the view/resend modals, which
+                // render the mail body, so those need the full row.
+                if ($isResolvingRecord) {
+                    return $query;
+                }
+
+                return $query->select(static::getIndexColumns());
+            })
             ->filters([
                 //
             ])
@@ -562,9 +660,10 @@ class MailResource extends Resource
     /**
      * Status counts shown in the index tab badges and the stats widget.
      *
-     * Each status runs its own count query; on every page load that is a dozen
-     * queries that do not scale on large tables. The whole set is computed once
-     * and cached so both consumers share a single resolution per TTL window.
+     * Each status runs its own count query; on every page load that is a
+     * handful of scans that do not scale on large tables. The whole set is
+     * computed once and cached so both consumers share a single resolution
+     * per TTL window.
      *
      * @return array<string, int>
      */
@@ -587,18 +686,17 @@ class MailResource extends Resource
         /** @var class-string<Mail> $model */
         $model = config('mails.models.mail');
 
-        $softBounced = $model::softBounced()->count();
-        $hardBounced = $model::hardBounced()->count();
+        $all = $model::count();
+        $sent = $model::sent()->count();
 
         return [
-            'all' => $model::count(),
-            'unsent' => $model::unsent()->count(),
-            'sent' => $model::sent()->count(),
+            'all' => $all,
+            // Every mail is either sent or unsent, so this saves a scan.
+            'unsent' => $all - $sent,
+            'sent' => $sent,
             'delivered' => $model::delivered()->count(),
             'opened' => $model::opened()->count(),
             'clicked' => $model::clicked()->count(),
-            'soft_bounced' => $softBounced,
-            'hard_bounced' => $hardBounced,
             // Distinct mails that bounced either way (matches the bounced tab filter).
             'bounced' => $model::bounced()->count(),
             'complained' => $model::complained()->count(),

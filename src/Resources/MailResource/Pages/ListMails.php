@@ -2,7 +2,6 @@
 
 namespace Backstage\Mails\Resources\MailResource\Pages;
 
-use Backstage\Mails\Laravel\Models\Mail;
 use Backstage\Mails\MailsPlugin;
 use Backstage\Mails\Resources\MailResource;
 use Backstage\Mails\Resources\MailResource\Widgets\MailStatsWidget;
@@ -34,11 +33,6 @@ class ListMails extends ListRecords
 
     public function getTabs(): array
     {
-        /** @var Mail $class */
-        $class = config('mails.models.mail');
-
-        $class = new $class;
-
         $counts = MailResource::getStatusCounts();
 
         return [
@@ -53,66 +47,49 @@ class ListMails extends ListRecords
                 ->badgeColor('gray')
                 ->icon('heroicon-o-inbox')
                 ->badge($counts['unsent'])
-                ->modifyQueryUsing(function (Builder $query) use ($class): Builder {
-                    return $class->unsent();
-                }),
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->unsent()),
 
             'sent' => Tab::make()
                 ->label(__('Sent'))
                 ->badgeColor('info')
                 ->icon('heroicon-o-paper-airplane')
                 ->badge($counts['sent'])
-                ->modifyQueryUsing(function (Builder $query) use ($class): Builder {
-                    return $class->sent();
-                }),
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->sent()),
 
             'delivered' => Tab::make()
                 ->label(__('Delivered'))
                 ->badgeColor('success')
                 ->icon('heroicon-o-inbox-arrow-down')
                 ->badge($counts['delivered'])
-                ->modifyQueryUsing(function (Builder $query) use ($class): Builder {
-                    return $class->delivered();
-                }),
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->delivered()),
 
             'opened' => Tab::make()
                 ->label(__('Opened'))
                 ->badgeColor('info')
                 ->icon('heroicon-o-envelope-open')
                 ->badge($counts['opened'])
-                ->modifyQueryUsing(function (Builder $query) use ($class): Builder {
-                    return $class->opened();
-                }),
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->opened()),
 
             'clicked' => Tab::make()
                 ->label(__('Clicked'))
                 ->badgeColor('clicked')
                 ->icon('heroicon-o-cursor-arrow-rays')
                 ->badge($counts['clicked'])
-                ->modifyQueryUsing(function (Builder $query) use ($class): Builder {
-                    return $class->clicked();
-                }),
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->clicked()),
 
             'bounced' => Tab::make()
                 ->label(__('Bounced'))
                 ->badgeColor('danger')
                 ->icon('heroicon-o-arrow-path-rounded-square')
                 ->badge($counts['bounced'])
-                ->modifyQueryUsing(function (Builder $query) use ($class): Builder {
-                    return $query->where(function (Builder $subQuery) use ($class) {
-                        return $subQuery->whereIn('id', $class::softBounced()->select('id'))
-                            ->orWhereIn('id', $class::hardBounced()->select('id'));
-                    });
-                }),
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->bounced()),
 
             'complained' => Tab::make()
                 ->label(__('Complained'))
                 ->badgeColor('gray')
                 ->icon('heroicon-o-face-frown')
                 ->badge($counts['complained'])
-                ->modifyQueryUsing(function (Builder $query) use ($class): Builder {
-                    return $class->complained();
-                }),
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->complained()),
         ];
     }
 
