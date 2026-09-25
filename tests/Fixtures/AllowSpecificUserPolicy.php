@@ -4,10 +4,10 @@ namespace Backstage\Mails\Tests\Fixtures;
 
 use Backstage\Mails\Laravel\Models\Mail;
 
-class DenyOddMailPolicy
+class AllowSpecificUserPolicy
 {
     public function view(User $user, Mail $mail): bool
     {
-        return $mail->getKey() % 2 === 0;
+        return $user->email === 'allowed@example.com';
     }
 }
