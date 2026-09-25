@@ -3,16 +3,18 @@
 use Backstage\Mails\Laravel\Models\Mail;
 use Backstage\Mails\Laravel\Models\MailAttachment;
 use Backstage\Mails\MailsPlugin;
+use Backstage\Mails\Tests\Fixtures\AllowSpecificUserPolicy;
 use Backstage\Mails\Tests\Fixtures\User;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-function mailUser(): User
+function mailUser(string $email = 'test@example.com'): User
 {
     return User::create([
         'name' => 'Test User',
-        'email' => 'test@example.com',
+        'email' => $email,
         'password' => Hash::make('password'),
     ]);
 }
@@ -166,4 +168,39 @@ it('renders stored html in a sandboxed inline preview', function () {
         ->toContain('sandbox')
         ->toContain('referrerpolicy="no-referrer"')
         ->not->toContain('src="');
+});
+
+it('consults the host mail policy for the preview when one is registered', function () {
+    Gate::policy(Mail::class, AllowSpecificUserPolicy::class);
+    MailsPlugin::get()->canManageMails(true);
+
+    $mail = Mail::factory()->create(['html' => '<p>visible</p>']);
+
+    $this->actingAs(mailUser('denied@example.com'))
+        ->get(previewUrl($mail))
+        ->assertForbidden();
+
+    $this->actingAs(mailUser('allowed@example.com'))
+        ->get(previewUrl($mail))
+        ->assertSuccessful()
+        ->assertSee('visible');
+});
+
+it('consults the host mail policy for attachment downloads when one is registered', function () {
+    Storage::fake('local');
+    Gate::policy(Mail::class, AllowSpecificUserPolicy::class);
+    MailsPlugin::get()->canManageMails(true);
+
+    $mail = Mail::factory()->create();
+    $attachment = attachmentFor($mail);
+
+    $this->actingAs(mailUser('denied@example.com'))
+        ->get(downloadUrl($mail, $attachment))
+        ->assertForbidden();
+
+    $response = $this->actingAs(mailUser('allowed@example.com'))
+        ->get(downloadUrl($mail, $attachment))
+        ->assertSuccessful();
+
+    expect($response->streamedContent())->toBe('CONFIDENTIAL');
 });
