@@ -162,3 +162,13 @@ it('renders stored html in a sandboxed inline preview', function () {
         ->toContain('referrerpolicy="no-referrer"')
         ->not->toContain('src="');
 });
+
+it('sizes the inline preview to its container rather than the viewport', function () {
+    $preview = view('mails::mails.preview', ['html' => '<p>Preview</p>'])->render();
+
+    // A viewport-wide frame inside a narrower card puts a centred email past
+    // the card's right edge, so the preview looks empty.
+    expect($preview)
+        ->toContain('width: 100%')
+        ->not->toContain('100vw');
+});
