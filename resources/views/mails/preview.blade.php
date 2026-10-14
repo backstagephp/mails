@@ -1,9 +1,9 @@
-<div class="w-full h-screen">
+<div style="width: 100%; height: 75vh;">
     <iframe
         srcdoc="{{ $html }}"
         sandbox
         referrerpolicy="no-referrer"
         title="{{ __('Email preview') }}"
-        class="w-full h-full max-w-full" style="width: 100vw; height: 100vh; border: none;">
+        style="display: block; width: 100%; height: 100%; border: none;">
     </iframe>
 </div>
