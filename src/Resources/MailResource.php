@@ -555,11 +555,18 @@ class MailResource extends Resource
                         ->label(__('Resend'))
                         ->icon('heroicon-o-arrow-uturn-right')
                         ->requiresConfirmation()
-                        ->modalDescription(__('Are you sure you want to resend the selected mails?'))
-                        ->schema(fn ($records) => self::getBulkResendForm($records))
-                        ->action(function (Collection $records, array $data) {
+                        ->modalDescription(__('Each selected mail is sent again to its own recipients.'))
+                        ->action(function (Collection $records) {
+                            // Each mail goes to its own recipients only. A shared
+                            // recipient list would send every selected mail to
+                            // the addresses of all the others.
                             foreach ($records as $record) {
-                                (new ResendMail)->handle($record, $data['to'], $data['cc'] ?? [], $data['bcc'] ?? []);
+                                (new ResendMail)->handle(
+                                    $record,
+                                    array_keys($record->to ?: []),
+                                    array_keys($record->cc ?: []),
+                                    array_keys($record->bcc ?: []),
+                                );
                             }
 
                             Notification::make()
@@ -590,45 +597,6 @@ class MailResource extends Resource
             TagsInput::make('bcc')
                 ->placeholder(__('Recipient(s)'))
                 ->label(__('BCC'))
-                ->rules(['nullable', 'array'])
-                ->nestedRecursiveRules(['email:rfc,dns']),
-        ];
-    }
-
-    private static function getBulkResendForm($records): array
-    {
-        $extractEmails = function ($records, $field) {
-            return collect($records)
-                ->map(fn ($record) => array_keys($record->{$field} ?? []))
-                ->flatten()
-                ->unique()
-                ->toArray();
-        };
-
-        $toEmails = $extractEmails($records, 'to');
-        $ccEmails = $extractEmails($records, 'cc');
-        $bccEmails = $extractEmails($records, 'bcc');
-
-        return [
-            TagsInput::make('to')
-                ->placeholder(__('Recipient(s)'))
-                ->label(__('Recipient(s)'))
-                ->default($toEmails)
-                ->required()
-                ->rules(['array'])
-                ->nestedRecursiveRules(['email:rfc,dns']),
-
-            TagsInput::make('cc')
-                ->placeholder(__('CC'))
-                ->label(__('CC'))
-                ->default($ccEmails)
-                ->rules(['nullable', 'array'])
-                ->nestedRecursiveRules(['email:rfc,dns']),
-
-            TagsInput::make('bcc')
-                ->placeholder(__('BCC'))
-                ->label(__('BCC'))
-                ->default($bccEmails)
                 ->rules(['nullable', 'array'])
                 ->nestedRecursiveRules(['email:rfc,dns']),
         ];
